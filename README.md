@@ -1,8 +1,8 @@
 ## **Descriptions**
 
 Install the requirements \
-`pip install --user -r requirements.txt`
+`$ pip install --user -r requirements.txt`
 
 Run the app \
-`cd codes` \
-`python app.py`
+`$ cd codes` \
+`$ python app.py`
