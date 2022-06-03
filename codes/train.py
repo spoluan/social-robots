@@ -111,6 +111,11 @@ class Train(object):
         for ep in range(epochs):
             print('epoch', ep, 'from', epochs)
             model.fit(x_train, y_train, batch_size=128, verbose=1, epochs=1, callbacks=callbacks_list)
+            
+    def main(self):
+        
+        x_train, y_train = self.load_dataset()
+        self.train(x_train, y_train)
 
 app = Train()
-app.train()
+app.main()
