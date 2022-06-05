@@ -103,7 +103,7 @@ class Train(object):
         
         from tensorflow.keras.callbacks import ModelCheckpoint
         save = 'weights-improvement-{epoch:02d}-{loss:.4f}-bigger.hdf5'
-        filepath = os.join.path("../model/seq-10-32-32", save)
+        filepath = os.path.join("../model/seq-10-32-32", save)
         checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
         callbacks_list = [checkpoint]  
         
