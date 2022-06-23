@@ -8,15 +8,57 @@ Created on Sun Apr 24 16:07:40 2022
 import tensorflow as tf  
 import numpy as np
 from fusion import Fusion  
+import glob
+import os
+from tensorflow.keras.layers import Input, Dense, Flatten, TimeDistributed
+from tensorflow.keras.layers import LSTM
+from tensorflow.keras import optimizers, Sequential
+from tensorflow.keras import Model as ModelKeras 
+from tensorflow.keras.applications import VGG16
 
 class Model(object):
     
     def __init__(self):
         self.fusion = Fusion() 
         self.loaded_model = self.load_model()
+
+    def transfer_learning(self, dimension=32, seq=4): 
+        
+        def vgg16(layer_name='sk'):
+            vgg_model = VGG16(weights="imagenet", include_top=False) # 224
+            seq = Sequential()
+            for x in range(len(vgg_model.layers)):
+                layer = vgg_model.layers[x]
+                layer._name = 'l_{}_{}' . format(layer_name, x)
+                layer.trainable = False
+                seq.add(layer)
+            return seq # seq.summary() # vgg_model.summary()
+       
+        input_shape = Input(shape=(seq, dimension, dimension, 3))  
+        x = TimeDistributed(vgg16(layer_name='sk'))(input_shape) 
+        x = TimeDistributed(Flatten())(x) 
+        x = Dense(512, activation='relu')(x) 
+        x = LSTM(512, return_sequences=False)(x)  
+        x = Dense(512, activation='relu')(x)  
+        x = Dense(2, activation='softmax', name='predictions')(x) 
+        model = ModelKeras(inputs=input_shape, outputs=x)
+        op = optimizers.Adam(lr=0.0001) 
+        model.compile(loss='categorical_crossentropy', optimizer=op, metrics=['accuracy'])
+         
+        model.summary() 
+        return model 
     
+    def load_model_v1(self):
+        files = glob.glob('..\model\seq-10-32-32/*')
+        file_model = max(files, key=os.path.getctime)
+        model =  tf.keras.models.load_model(file_model)
+        return model
+
     def load_model(self):
-        model = tf.keras.models.load_model('../model/seq-10-32-32/weights-improvement-01-0.0000-bigger.hdf5')
+        files = glob.glob('..\model\seq-10-32-32/*')
+        file_model = max(files, key=os.path.getctime)
+        model = self.transfer_learning(dimension=32, seq=10)
+        model.load_weights(file_model)
         return model
     
     def get_results(self, results):
